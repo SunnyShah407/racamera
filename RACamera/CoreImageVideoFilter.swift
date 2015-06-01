@@ -126,6 +126,27 @@ class CoreImageVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         return resImage
     }
     
+    func takePhoto() -> UIImage? {
+        var resImage : UIImage?
+        let connection = self.stillImageOutput.connectionWithMediaType(AVMediaTypeVideo)
+        connection.videoOrientation = AVCaptureVideoOrientation(rawValue: UIDevice.currentDevice().orientation.rawValue)!
+        self.stillImageOutput.captureStillImageAsynchronouslyFromConnection(connection) {
+            (imageDataSampleBuffer, error) -> Void in
+            if error == nil {
+                let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer)
+                let metadata:NSDictionary = CMCopyDictionaryOfAttachments(nil, imageDataSampleBuffer, CMAttachmentMode(kCMAttachmentMode_ShouldPropagate)).takeRetainedValue()
+                if let image = UIImage(data:imageData){
+                    resImage = image
+                }
+            }
+            else {
+                println("error while capturing still image : \(error)")
+            }
+        }
+        return resImage
+    }
+    
+    
   
     //MARK: <AVCaptureVideoDataOutputSampleBufferDelegate
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {

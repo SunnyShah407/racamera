@@ -28,7 +28,7 @@ class ViewController: UIViewController {
     
     
     @IBAction func takePhoto(sender: UIButton) {
-        if let savePhoto = videoFilter?.caputrePhoto() {
+        if let savePhoto = videoFilter?.takePhoto() {
             UIImageWriteToSavedPhotosAlbum(savePhoto, nil, nil, nil) 
         }
     }
