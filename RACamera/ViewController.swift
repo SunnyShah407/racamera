@@ -8,9 +8,11 @@
 
 import UIKit
 
+typealias Filter = CIImage -> CIImage
+
 class ViewController: UIViewController {
 
-    var videoFilter : CoreImageVideoFilter?
+    var videoFilter : RAVideoFilter?
     var detector: CIDetector?
     
 
@@ -19,16 +21,36 @@ class ViewController: UIViewController {
         
         // Create the filter
         
-        videoFilter = CoreImageVideoFilter(superview: view, applyFilterCallback: nil)
-        detector = prepareRectangleDetector()
-        videoFilter?.applyFilter = {image in  return self.performRectangleDetection(image)}
+        videoFilter = RAVideoFilter(superview: view, applyFilterCallback: nil)
+//        detector = prepareRectangleDetector()
+        
+//        videoFilter?.applyFilter = {image in  return self.performRectangleDetection(image)}
+        videoFilter?.setCameraPosition(0)
+//        videoFilter?.applyFilter = {image in  return self.performFilter(image)}
+        videoFilter?.applyFilter = {image in  return self.mergeImage(image)}
         videoFilter?.startFiltering()
         
     }
     
     
+    @IBAction func switchCamera(sender: AnyObject) {
+        if let vedioFilter = videoFilter {
+            videoFilter?.stopFiltering()
+            switch sender.selectedSegmentIndex {
+            case 0 :
+                videoFilter?.setCameraPosition(0)
+            case 1:
+                videoFilter?.setCameraPosition(1)
+            default:
+                videoFilter?.setCameraPosition(1)
+            }
+            videoFilter?.updateAVSession()
+            videoFilter?.startFiltering()
+        }
+    }
+    
     @IBAction func takePhoto(sender: UIButton) {
-        if let savePhoto = videoFilter?.takePhoto() {
+        if let savePhoto = videoFilter?.captureImage(){
             UIImageWriteToSavedPhotosAlbum(savePhoto, nil, nil, nil) 
         }
     }
@@ -38,7 +60,27 @@ class ViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
+    
+    func mergeImage(image:CIImage) -> CIImage? {
+        var resultImage: CIImage?
+        let topImage = UIImage(named:"bee")
+        let filter = CIFilter(name: "CIDarkenBlendMode")
+        filter.setValue(image,forKey: kCIInputBackgroundImageKey)
+        filter.setValue(CIImage(image: topImage), forKey: kCIInputImageKey)
+        return filter.outputImage
+    }
     //MARK: Utility methods
+    
+    
+    func performFilter(image: CIImage) -> CIImage? {
+        var resultImage: CIImage?
+        let filter = CIFilter(name:"CISepiaTone")
+        filter.setValue(image, forKey: kCIInputImageKey)
+        filter.setValue(0.5, forKey: kCIInputIntensityKey)
+        resultImage = filter.outputImage
+        return resultImage
+    }
+    
     func performRectangleDetection(image: CIImage) -> CIImage? {
         var resultImage: CIImage?
         if let detector = detector {

@@ -14,19 +14,18 @@ import CoreImage
 import OpenGLES
 import QuartzCore
 
-class CoreImageVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
-    var applyFilter: ((CIImage) -> CIImage?)?
+class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
+    var applyFilter: ((CIImage) -> CIImage?)?       //滤镜方法
+    var device : AVCaptureDevice!   //摄像头位置 0: Front  1: Back
     var videoDisplayView: GLKView!
     var videoDisplayViewBounds: CGRect!
     var renderContext: CIContext!
-  
     var avSession: AVCaptureSession?
     var sessionQueue: dispatch_queue_t!
-  
     var detector: CIDetector?
-    
+    var videoInput: AVCaptureDeviceInput!
+    var videoOutput:    AVCaptureVideoDataOutput!
     var stillImageOutput: AVCaptureStillImageOutput!
-    var saveImage : UIImage?
   
     init(superview: UIView, applyFilterCallback: ((CIImage) -> CIImage?)?) {
         self.applyFilter = applyFilterCallback
@@ -48,54 +47,63 @@ class CoreImageVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
   
     func startFiltering() {
-        // Create a session if we don't already have one
         if avSession == nil {
             avSession = createAVSession()
         }
-    
-        // And kick it off
         avSession?.startRunning()
     }
   
     func stopFiltering() {
-        // Stop the av session
         avSession?.stopRunning()
     }
-  
-    func createAVSession() -> AVCaptureSession {
-        // 选择一个输入设备
-        var backCamera:AVCaptureDevice?
-        var frontCamera:AVCaptureDevice?
-    
-        let availableCameraDevices = AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo)
-        for device in availableCameraDevices as! [AVCaptureDevice] {
-            if device.position == .Back {
-                backCamera = device
+    //TODO: 修改下前后相机参数的设定
+    func setCameraPosition(position: Int8) {
+        let avalableCameraDevices  = AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo)
+        for ldevice in avalableCameraDevices as! [AVCaptureDevice] {
+            if position == 0 && ldevice.position == .Front {
+                self.device = ldevice
             }
-            else if device.position == .Front {
-                frontCamera = device
+            else if ldevice.position == .Back {
+                self.device = ldevice
             }
         }
-    
-        // 设置默认设备为后置摄像头
-        let device = backCamera
+    }
+  
+    // 刷新session设置
+    func updateAVSession(){
         var error: NSError?
-        let input = AVCaptureDeviceInput(device: device, error: &error)
+        for oldDevice in avSession?.inputs as! [AVCaptureDeviceInput] {
+            avSession?.removeInput(oldDevice)
+        }
+        let input = AVCaptureDeviceInput(device: self.device, error: &error)
+        avSession?.addInput(input)
+    }
+    
+    func createAVSession() -> AVCaptureSession {
+        // 选择一个输入设备
+        var error: NSError?
+        let input = AVCaptureDeviceInput(device: self.device, error: &error)
     
         // Start out with low quality
         let session = AVCaptureSession()
         session.sessionPreset = AVCaptureSessionPresetMedium
     
-        // Output
-        let videoOutput = AVCaptureVideoDataOutput()
+        // Vedio Output
     
+        videoOutput = AVCaptureVideoDataOutput()
         videoOutput.videoSettings = [ kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA]
         videoOutput.alwaysDiscardsLateVideoFrames = true
         videoOutput.setSampleBufferDelegate(self, queue: sessionQueue)
-    
+        
+        // Still image output
+        stillImageOutput = AVCaptureStillImageOutput()
+        stillImageOutput.outputSettings = [AVVideoCodecKey: AVVideoCodecJPEG]
+        
+        
         // Join it all together
         session.addInput(input)
         session.addOutput(videoOutput)
+        session.addOutput(stillImageOutput)
 
         return session
     }
@@ -103,16 +111,11 @@ class CoreImageVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     
     func caputrePhoto() -> UIImage? {
         var resImage : UIImage?
-        stillImageOutput = AVCaptureStillImageOutput()
-        stillImageOutput.outputSettings = [AVVideoCodecKey: AVVideoCodecJPEG]
-        if (avSession?.canAddOutput(stillImageOutput) != nil){
-            avSession?.addOutput(stillImageOutput)
-        }
-        if let videoConnection = stillImageOutput?.connectionWithMediaType(AVMediaTypeVideo)
+        if let videoConnection = self.stillImageOutput.connectionWithMediaType(AVMediaTypeVideo)
         {
-            stillImageOutput?.captureStillImageAsynchronouslyFromConnection(videoConnection)
+            self.stillImageOutput.captureStillImageAsynchronouslyFromConnection(videoConnection)
                 {
-                    (imageSampleBuffer : CMSampleBuffer!, _) in
+                    (imageSampleBuffer : CMSampleBuffer?, error: NSError?) -> Void in
                     
                     let imageDataJpeg = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageSampleBuffer)
                     var pickedImage: CIImage = CIImage(data: imageDataJpeg)!
@@ -125,29 +128,40 @@ class CoreImageVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         return resImage
     }
-    
-    func takePhoto() -> UIImage? {
-        var resImage : UIImage?
+   
+    //TODO: 照相功能
+    func captureImage() -> UIImage {
+        var resImage : UIImage!
         let connection = self.stillImageOutput.connectionWithMediaType(AVMediaTypeVideo)
+        // 将视频的旋转与设备同步
         connection.videoOrientation = AVCaptureVideoOrientation(rawValue: UIDevice.currentDevice().orientation.rawValue)!
+        
         self.stillImageOutput.captureStillImageAsynchronouslyFromConnection(connection) {
             (imageDataSampleBuffer, error) -> Void in
+            
             if error == nil {
+                
+                // 如果使用 session .Photo 预设，或者在设备输出设置中明确进行了设置
+                // 我们就能获得已经压缩为JPEG的数据
+                
                 let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer)
-                let metadata:NSDictionary = CMCopyDictionaryOfAttachments(nil, imageDataSampleBuffer, CMAttachmentMode(kCMAttachmentMode_ShouldPropagate)).takeRetainedValue()
-                if let image = UIImage(data:imageData){
+                
+                // 样本缓冲区也包含元数据，我们甚至可以按需修改它
+                
+                let metadata:NSDictionary = CMCopyDictionaryOfAttachments(nil, imageDataSampleBuffer, CMAttachmentMode(kCMAttachmentMode_ShouldPropagate)).takeUnretainedValue()
+                
+                if let image = UIImage(data: imageData) {
+                    // 保存图片，或者做些其他想做的事情
                     resImage = image
                 }
             }
             else {
-                println("error while capturing still image : \(error)")
+                NSLog("error while capturing still image: \(error)")
             }
         }
         return resImage
     }
     
-    
-  
     //MARK: <AVCaptureVideoDataOutputSampleBufferDelegate
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
     
