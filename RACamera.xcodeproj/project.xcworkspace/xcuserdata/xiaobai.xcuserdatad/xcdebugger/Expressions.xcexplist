@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VariablesViewState
+   version = "1.0">
+   <ContextStates>
+      <ContextState
+         contextName = "RACamera.CoreImageVideoFilter.caputrePhoto (RACamera.CoreImageVideoFilter)() -&gt; Swift.Optional&lt;ObjectiveC.UIImage&gt;:CoreImageVideoFilter.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "resImage">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "RACamera.ViewController.switchCamera (RACamera.ViewController)(Swift.AnyObject) -&gt; ():ViewController.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "videoFilter">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+   </ContextStates>
+</VariablesViewState>

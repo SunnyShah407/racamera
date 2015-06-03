@@ -7,13 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		030FEF391B1DCC4A004C2F53 /* bee.png in Resources */ = {isa = PBXBuildFile; fileRef = 030FEF381B1DCC4A004C2F53 /* bee.png */; };
 		03B37D681B1466510068D15F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B37D671B1466510068D15F /* AppDelegate.swift */; };
 		03B37D6A1B1466510068D15F /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B37D691B1466510068D15F /* ViewController.swift */; };
 		03B37D6D1B1466510068D15F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 03B37D6B1B1466510068D15F /* Main.storyboard */; };
 		03B37D6F1B1466510068D15F /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 03B37D6E1B1466510068D15F /* Images.xcassets */; };
 		03B37D721B1466510068D15F /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 03B37D701B1466510068D15F /* LaunchScreen.xib */; };
 		03B37D7E1B1466510068D15F /* RACameraTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B37D7D1B1466510068D15F /* RACameraTests.swift */; };
-		03B37D881B147E7D0068D15F /* CoreImageVideoFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B37D871B147E7D0068D15F /* CoreImageVideoFilter.swift */; };
+		03B37D881B147E7D0068D15F /* RAVideoFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B37D871B147E7D0068D15F /* RAVideoFilter.swift */; };
 		03B37D8A1B1C1D890068D15F /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 03B37D891B1C1D890068D15F /* logo.png */; };
 /* End PBXBuildFile section */
 
@@ -28,6 +29,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		030FEF381B1DCC4A004C2F53 /* bee.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bee.png; sourceTree = "<group>"; };
 		03B37D621B1466510068D15F /* RACamera.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RACamera.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		03B37D661B1466510068D15F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		03B37D671B1466510068D15F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -38,7 +40,7 @@
 		03B37D771B1466510068D15F /* RACameraTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RACameraTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		03B37D7C1B1466510068D15F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		03B37D7D1B1466510068D15F /* RACameraTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RACameraTests.swift; sourceTree = "<group>"; };
-		03B37D871B147E7D0068D15F /* CoreImageVideoFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CoreImageVideoFilter.swift; sourceTree = "<group>"; };
+		03B37D871B147E7D0068D15F /* RAVideoFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RAVideoFilter.swift; sourceTree = "<group>"; };
 		03B37D891B1C1D890068D15F /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -83,9 +85,10 @@
 			children = (
 				03B37D671B1466510068D15F /* AppDelegate.swift */,
 				03B37D691B1466510068D15F /* ViewController.swift */,
-				03B37D871B147E7D0068D15F /* CoreImageVideoFilter.swift */,
+				03B37D871B147E7D0068D15F /* RAVideoFilter.swift */,
 				03B37D6B1B1466510068D15F /* Main.storyboard */,
 				03B37D891B1C1D890068D15F /* logo.png */,
+				030FEF381B1DCC4A004C2F53 /* bee.png */,
 				03B37D6E1B1466510068D15F /* Images.xcassets */,
 				03B37D701B1466510068D15F /* LaunchScreen.xib */,
 				03B37D651B1466510068D15F /* Supporting Files */,
@@ -199,6 +202,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				03B37D6D1B1466510068D15F /* Main.storyboard in Resources */,
+				030FEF391B1DCC4A004C2F53 /* bee.png in Resources */,
 				03B37D721B1466510068D15F /* LaunchScreen.xib in Resources */,
 				03B37D6F1B1466510068D15F /* Images.xcassets in Resources */,
 				03B37D8A1B1C1D890068D15F /* logo.png in Resources */,
@@ -220,7 +224,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				03B37D6A1B1466510068D15F /* ViewController.swift in Sources */,
-				03B37D881B147E7D0068D15F /* CoreImageVideoFilter.swift in Sources */,
+				03B37D881B147E7D0068D15F /* RAVideoFilter.swift in Sources */,
 				03B37D681B1466510068D15F /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -419,6 +423,7 @@
 				03B37D831B1466510068D15F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		03B37D841B1466510068D15F /* Build configuration list for PBXNativeTarget "RACameraTests" */ = {
 			isa = XCConfigurationList;
@@ -427,6 +432,7 @@
 				03B37D861B1466510068D15F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
