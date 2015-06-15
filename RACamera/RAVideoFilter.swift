@@ -75,14 +75,26 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         for oldDevice in avSession?.inputs as! [AVCaptureDeviceInput] {
             avSession?.removeInput(oldDevice)
         }
-        let input = AVCaptureDeviceInput(device: self.device, error: &error)
+        let input: AVCaptureDeviceInput!
+        do {
+            input = try AVCaptureDeviceInput(device: self.device)
+        } catch var error1 as NSError {
+            error = error1
+            input = nil
+        }
         avSession?.addInput(input)
     }
     
     func createAVSession() -> AVCaptureSession {
         // 选择一个输入设备
         var error: NSError?
-        let input = AVCaptureDeviceInput(device: self.device, error: &error)
+        let input: AVCaptureDeviceInput!
+        do {
+            input = try AVCaptureDeviceInput(device: self.device)
+        } catch var error1 as NSError {
+            error = error1
+            input = nil
+        }
     
         // Start out with low quality
         let session = AVCaptureSession()
@@ -118,7 +130,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                     (imageSampleBuffer : CMSampleBuffer?, error: NSError?) -> Void in
                     
                     let imageDataJpeg = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageSampleBuffer)
-                    var pickedImage: CIImage = CIImage(data: imageDataJpeg)!
+                    let pickedImage: CIImage = CIImage(data: imageDataJpeg)!
                     let detecitionResult = self.applyFilter!(pickedImage)
                     resImage = UIImage(CIImage: pickedImage)
                     if detecitionResult != nil {
@@ -181,7 +193,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
     
         // Do some clipping
-        var drawFrame = outputImage.extent()
+        var drawFrame = outputImage.extent
         let imageAR = drawFrame.width / drawFrame.height
         let viewAR = videoDisplayViewBounds.width / videoDisplayViewBounds.height
         if imageAR > viewAR {

@@ -121,10 +121,10 @@ class ViewController: UIViewController {
     func drawHighlightOverlayForPoints(image: CIImage, topLeft: CGPoint, topRight: CGPoint,
         bottomLeft: CGPoint, bottomRight: CGPoint) -> CIImage {
             var overlay = CIImage(color: CIColor(red: 1.0, green: 0, blue: 0, alpha: 0.5))
-            overlay = overlay.imageByCroppingToRect(image.extent())
+            overlay = overlay.imageByCroppingToRect(image.extent)
             overlay = overlay.imageByApplyingFilter("CIPerspectiveTransformWithExtent",
                 withInputParameters: [
-                    "inputExtent": CIVector(CGRect: image.extent()),
+                    "inputExtent": CIVector(CGRect: image.extent),
                     "inputTopLeft": CIVector(CGPoint: topLeft),
                     "inputTopRight": CIVector(CGPoint: topRight),
                     "inputBottomLeft": CIVector(CGPoint: bottomLeft),
