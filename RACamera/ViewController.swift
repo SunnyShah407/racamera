@@ -8,8 +8,6 @@
 
 import UIKit
 
-typealias Filter = CIImage -> CIImage
-
 class ViewController: UIViewController {
 
     var videoFilter : RAVideoFilter?
@@ -23,7 +21,10 @@ class ViewController: UIViewController {
         
         videoFilter = RAVideoFilter(superview: view, applyFilterCallback: nil)
         videoFilter?.setCameraPosition(0)
-        videoFilter?.applyFilter = {image in  return self.videoFilter?.mergeImage(image)}
+ //       videoFilter?.applyFilter = {image in  return self.videoFilter?.mergeImage(image)}
+ //       videoFilter?.applyFilter = videoFilter?.fblur(1.0)
+        videoFilter?.applyFilter = videoFilter?.ftest()
+
         videoFilter?.startFiltering()
         
     }
@@ -46,7 +47,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func takePhoto(sender: UIButton) {
-        videoFilter?.captureImageWithFilter()
+        videoFilter?.captureImage()
     }
     
     
