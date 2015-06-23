@@ -50,9 +50,15 @@ class ViewController: UIViewController {
     }
     
     @IBAction func takePhoto(sender: UIButton) {
-        if let savePhoto = videoFilter?.captureImage(){
-            UIImageWriteToSavedPhotosAlbum(savePhoto, nil, nil, nil) 
-        }
+
+        videoFilter?.captureImage()
+
+//        if let savePhoto = videoFilter?.captureImage(){
+//            UIImageWriteToSavedPhotosAlbum(savePhoto, nil, nil, nil) 
+//        }
+//        else {
+//            print("error on captureImage")
+//        }
     }
     
     override func didReceiveMemoryWarning() {
@@ -62,12 +68,12 @@ class ViewController: UIViewController {
 
     
     func mergeImage(image:CIImage) -> CIImage? {
-        var resultImage: CIImage?
+//        var resultImage: CIImage?
         let topImage = UIImage(named:"bee")
         let filter = CIFilter(name: "CIDarkenBlendMode")
-        filter.setValue(image,forKey: kCIInputBackgroundImageKey)
-        filter.setValue(CIImage(image: topImage), forKey: kCIInputImageKey)
-        return filter.outputImage
+        filter!.setValue(image,forKey: kCIInputBackgroundImageKey)
+        filter!.setValue(CIImage(image: topImage!), forKey: kCIInputImageKey)
+        return filter!.outputImage
     }
     //MARK: Utility methods
     
@@ -75,9 +81,9 @@ class ViewController: UIViewController {
     func performFilter(image: CIImage) -> CIImage? {
         var resultImage: CIImage?
         let filter = CIFilter(name:"CISepiaTone")
-        filter.setValue(image, forKey: kCIInputImageKey)
-        filter.setValue(0.5, forKey: kCIInputIntensityKey)
-        resultImage = filter.outputImage
+        filter!.setValue(image, forKey: kCIInputImageKey)
+        filter!.setValue(0.5, forKey: kCIInputIntensityKey)
+        resultImage = filter!.outputImage
         return resultImage
     }
     

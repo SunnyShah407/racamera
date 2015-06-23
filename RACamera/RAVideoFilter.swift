@@ -29,7 +29,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
   
     init(superview: UIView, applyFilterCallback: ((CIImage) -> CIImage?)?) {
         self.applyFilter = applyFilterCallback
-        videoDisplayView = GLKView(frame: superview.bounds, context: EAGLContext(API: .OpenGLES2))
+        videoDisplayView = GLKView(frame: superview.bounds, context: EAGLContext(API: .OpenGLES2)!)
         videoDisplayView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI_2))
         videoDisplayView.frame = superview.bounds
         superview.addSubview(videoDisplayView)
@@ -103,7 +103,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         // Vedio Output
     
         videoOutput = AVCaptureVideoDataOutput()
-        videoOutput.videoSettings = [ kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA]
+//        videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA]
         videoOutput.alwaysDiscardsLateVideoFrames = true
         videoOutput.setSampleBufferDelegate(self, queue: sessionQueue)
         
@@ -142,45 +142,30 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     }
    
     //TODO: 照相功能
-    func captureImage() -> UIImage {
-        var resImage : UIImage!
-        let connection = self.stillImageOutput.connectionWithMediaType(AVMediaTypeVideo)
-        // 将视频的旋转与设备同步
-        connection.videoOrientation = AVCaptureVideoOrientation(rawValue: UIDevice.currentDevice().orientation.rawValue)!
-        
-        self.stillImageOutput.captureStillImageAsynchronouslyFromConnection(connection) {
-            (imageDataSampleBuffer, error) -> Void in
-            
-            if error == nil {
-                
-                // 如果使用 session .Photo 预设，或者在设备输出设置中明确进行了设置
-                // 我们就能获得已经压缩为JPEG的数据
-                
-                let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer)
-                
-                // 样本缓冲区也包含元数据，我们甚至可以按需修改它
-                
-                let metadata:NSDictionary = CMCopyDictionaryOfAttachments(nil, imageDataSampleBuffer, CMAttachmentMode(kCMAttachmentMode_ShouldPropagate)).takeUnretainedValue()
-                
-                if let image = UIImage(data: imageData) {
-                    // 保存图片，或者做些其他想做的事情
-                    resImage = image
-                }
-            }
-            else {
-                NSLog("error while capturing still image: \(error)")
+    func captureImage(){
+        if let connection = stillImageOutput?.connectionWithMediaType(AVMediaTypeVideo) {
+            stillImageOutput?.captureStillImageAsynchronouslyFromConnection(connection)
+                {
+                    (imageSampleBuffer : CMSampleBuffer!, _) in
+                    
+                    let imageDataJpeg = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageSampleBuffer)
+                    var pickedImage: UIImage = UIImage(data: imageDataJpeg)!
+                    UIImageWriteToSavedPhotosAlbum(pickedImage, nil, nil, nil)
             }
         }
-        return resImage
+        else {
+            print("error on connect")
+        }
     }
-    
+
+
     //MARK: <AVCaptureVideoDataOutputSampleBufferDelegate
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
     
         // Need to shimmy this through type-hell
         let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
         // Force the type change - pass through opaque buffer
-        let opaqueBuffer = Unmanaged<CVImageBuffer>.passUnretained(imageBuffer).toOpaque()
+        let opaqueBuffer = Unmanaged<CVImageBuffer>.passUnretained(imageBuffer!).toOpaque()
         let pixelBuffer = Unmanaged<CVPixelBuffer>.fromOpaque(opaqueBuffer).takeUnretainedValue()
     
         let sourceImage = CIImage(CVPixelBuffer: pixelBuffer, options: nil)
