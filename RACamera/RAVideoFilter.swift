@@ -94,7 +94,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     }
     
     func createAVSession() -> AVCaptureSession {
-        // 选择一个输入设备
+        // set input device
 
         let input: AVCaptureDeviceInput!
         do {
@@ -141,6 +141,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                     let resImage = self.applyFilter!(CIImage(image: pickedImage)!)
                     let cgImage = ciContext.createCGImage(resImage!, fromRect: (CIImage(image:pickedImage)?.extent)!)
                     let uiImage = UIImage(CGImage: cgImage)
+                    print(uiImage.size)
                     UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
             }
         }
@@ -149,12 +150,26 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
     }
     
-    // Filter List
+    // Filter
     func ftest() -> Filter {
         let topImage = UIImage(named: "bee")
         return self.fblur(5.0) >|> self.fmerge(CIImage(image: topImage!)!)
     }
     
+    func fmergeAtPoint(inputImage: UIImage, topLoc: CGPoint) -> Filter {
+        UIGraphicsBeginImageContextWithOptions(inputImage.size, false, 0)
+        inputImage.drawAtPoint(topLoc)
+        let im = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        let ciim = CIImage(image: im)
+        return {
+            image in
+            let filter = CIFilter(name: "CIDarkenBlendMode")
+            filter!.setValue(image,forKey: kCIInputBackgroundImageKey)
+            filter!.setValue(ciim, forKey: kCIInputImageKey)
+            return filter!.outputImage
+        }
+    }
     
     func fmerge(topImage:CIImage) -> Filter {
         return {
@@ -174,6 +189,9 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             return filter!.outputImage
         }
     }
+    
+    //TODO: 文字滤镜 - 添加文字overlay
+    //TODO:
     
     //MARK: <AVCaptureVideoDataOutputSampleBufferDelegate
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {

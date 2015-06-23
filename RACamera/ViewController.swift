@@ -55,8 +55,10 @@ class ViewController: UIViewController {
         if let touch = touches.first {
             let location = touch.locationInView(self.view)
             videoFilter?.touchLocation = location
+            videoFilter?.applyFilter = videoFilter?.fmergeAtPoint(UIImage(named: "bee")!, topLoc: location)
             print(location)
         }
+        
         super.touchesBegan(touches, withEvent:event)
     }
 }
