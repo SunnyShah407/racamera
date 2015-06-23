@@ -14,6 +14,7 @@ import CoreImage
 import OpenGLES
 import QuartzCore
 
+
 class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     var applyFilter: ((CIImage) -> CIImage?)?       //滤镜方法
     var device : AVCaptureDevice!   //摄像头位置 0: Front  1: Back
@@ -26,10 +27,11 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     var videoInput: AVCaptureDeviceInput!
     var videoOutput:    AVCaptureVideoDataOutput!
     var stillImageOutput: AVCaptureStillImageOutput!
+    var touchLocation: CGPoint?
   
     init(superview: UIView, applyFilterCallback: ((CIImage) -> CIImage?)?) {
         self.applyFilter = applyFilterCallback
-        videoDisplayView = GLKView(frame: superview.bounds, context: EAGLContext(API: .OpenGLES2))
+        videoDisplayView = GLKView(frame: superview.bounds, context: EAGLContext(API: .OpenGLES2)!)
         videoDisplayView.transform = CGAffineTransformMakeRotation(CGFloat(M_PI_2))
         videoDisplayView.frame = superview.bounds
         superview.addSubview(videoDisplayView)
@@ -75,14 +77,26 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         for oldDevice in avSession?.inputs as! [AVCaptureDeviceInput] {
             avSession?.removeInput(oldDevice)
         }
-        let input = AVCaptureDeviceInput(device: self.device, error: &error)
+        let input: AVCaptureDeviceInput!
+        do {
+            input = try AVCaptureDeviceInput(device: self.device)
+        } catch var error1 as NSError {
+            error = error1
+            input = nil
+        }
         avSession?.addInput(input)
     }
     
     func createAVSession() -> AVCaptureSession {
         // 选择一个输入设备
         var error: NSError?
-        let input = AVCaptureDeviceInput(device: self.device, error: &error)
+        let input: AVCaptureDeviceInput!
+        do {
+            input = try AVCaptureDeviceInput(device: self.device)
+        } catch var error1 as NSError {
+            error = error1
+            input = nil
+        }
     
         // Start out with low quality
         let session = AVCaptureSession()
@@ -91,7 +105,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         // Vedio Output
     
         videoOutput = AVCaptureVideoDataOutput()
-        videoOutput.videoSettings = [ kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA]
+//        videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA]
         videoOutput.alwaysDiscardsLateVideoFrames = true
         videoOutput.setSampleBufferDelegate(self, queue: sessionQueue)
         
@@ -118,7 +132,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                     (imageSampleBuffer : CMSampleBuffer?, error: NSError?) -> Void in
                     
                     let imageDataJpeg = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageSampleBuffer)
-                    var pickedImage: CIImage = CIImage(data: imageDataJpeg)!
+                    let pickedImage: CIImage = CIImage(data: imageDataJpeg)!
                     let detecitionResult = self.applyFilter!(pickedImage)
                     resImage = UIImage(CIImage: pickedImage)
                     if detecitionResult != nil {
@@ -128,47 +142,65 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
         return resImage
     }
-   
+    
+    
     //TODO: 照相功能
-    func captureImage() -> UIImage {
-        var resImage : UIImage!
-        let connection = self.stillImageOutput.connectionWithMediaType(AVMediaTypeVideo)
-        // 将视频的旋转与设备同步
-        connection.videoOrientation = AVCaptureVideoOrientation(rawValue: UIDevice.currentDevice().orientation.rawValue)!
-        
-        self.stillImageOutput.captureStillImageAsynchronouslyFromConnection(connection) {
-            (imageDataSampleBuffer, error) -> Void in
-            
-            if error == nil {
-                
-                // 如果使用 session .Photo 预设，或者在设备输出设置中明确进行了设置
-                // 我们就能获得已经压缩为JPEG的数据
-                
-                let imageData = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageDataSampleBuffer)
-                
-                // 样本缓冲区也包含元数据，我们甚至可以按需修改它
-                
-                let metadata:NSDictionary = CMCopyDictionaryOfAttachments(nil, imageDataSampleBuffer, CMAttachmentMode(kCMAttachmentMode_ShouldPropagate)).takeUnretainedValue()
-                
-                if let image = UIImage(data: imageData) {
-                    // 保存图片，或者做些其他想做的事情
-                    resImage = image
-                }
-            }
-            else {
-                NSLog("error while capturing still image: \(error)")
+    func captureImage(){
+        if let connection = stillImageOutput?.connectionWithMediaType(AVMediaTypeVideo) {
+            stillImageOutput?.captureStillImageAsynchronouslyFromConnection(connection)
+                {
+                    (imageSampleBuffer : CMSampleBuffer!, _) in
+                    
+                    let imageDataJpeg = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageSampleBuffer)
+                    let pickedImage: UIImage = UIImage(data: imageDataJpeg)!
+                    UIImageWriteToSavedPhotosAlbum(pickedImage, nil, nil, nil)
             }
         }
-        return resImage
+        else {
+            print("error on connect")
+        }
+    }
+
+    func captureImageWithFilter(){
+        if let connection = stillImageOutput?.connectionWithMediaType(AVMediaTypeVideo) {
+            stillImageOutput?.captureStillImageAsynchronouslyFromConnection(connection)
+                {
+                    (imageSampleBuffer : CMSampleBuffer!, _) in
+                    
+                    let imageDataJpeg = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageSampleBuffer)
+                    let pickedImage: UIImage = UIImage(data: imageDataJpeg)!
+                    let topImage = UIImage(named:"bee")
+                    let filter = CIFilter(name: "CIDarkenBlendMode")
+                    filter!.setValue(CIImage(image:pickedImage),forKey: kCIInputBackgroundImageKey)
+                    filter!.setValue(CIImage(image: topImage!), forKey: kCIInputImageKey)
+                    let ciContext = CIContext(options: nil)
+                    let cgImage = ciContext.createCGImage((filter?.outputImage)!, fromRect: (CIImage(image: pickedImage)?.extent)!)
+                    let uiImage = UIImage(CGImage: cgImage)
+                    UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
+            }
+        }
+        else {
+            print("error on connect")
+        }
     }
     
+    
+    // Filter 
+    func mergeImage(image:CIImage) -> CIImage? {
+        let topImage = UIImage(named:"bee")
+        let filter = CIFilter(name: "CIDarkenBlendMode")
+        filter!.setValue(image,forKey: kCIInputBackgroundImageKey)
+        filter!.setValue(CIImage(image: topImage!), forKey: kCIInputImageKey)
+        return filter!.outputImage
+    }
+
     //MARK: <AVCaptureVideoDataOutputSampleBufferDelegate
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
     
         // Need to shimmy this through type-hell
         let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
         // Force the type change - pass through opaque buffer
-        let opaqueBuffer = Unmanaged<CVImageBuffer>.passUnretained(imageBuffer).toOpaque()
+        let opaqueBuffer = Unmanaged<CVImageBuffer>.passUnretained(imageBuffer!).toOpaque()
         let pixelBuffer = Unmanaged<CVPixelBuffer>.fromOpaque(opaqueBuffer).takeUnretainedValue()
     
         let sourceImage = CIImage(CVPixelBuffer: pixelBuffer, options: nil)
@@ -181,7 +213,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
     
         // Do some clipping
-        var drawFrame = outputImage.extent()
+        var drawFrame = outputImage.extent
         let imageAR = drawFrame.width / drawFrame.height
         let viewAR = videoDisplayViewBounds.width / videoDisplayViewBounds.height
         if imageAR > viewAR {
