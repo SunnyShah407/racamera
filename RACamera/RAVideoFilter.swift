@@ -14,6 +14,7 @@ import CoreImage
 import OpenGLES
 import QuartzCore
 
+
 class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     var applyFilter: ((CIImage) -> CIImage?)?       //滤镜方法
     var device : AVCaptureDevice!   //摄像头位置 0: Front  1: Back
@@ -26,6 +27,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     var videoInput: AVCaptureDeviceInput!
     var videoOutput:    AVCaptureVideoDataOutput!
     var stillImageOutput: AVCaptureStillImageOutput!
+    var touchLocation: CGPoint?
   
     init(superview: UIView, applyFilterCallback: ((CIImage) -> CIImage?)?) {
         self.applyFilter = applyFilterCallback
@@ -140,7 +142,8 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
         return resImage
     }
-   
+    
+    
     //TODO: 照相功能
     func captureImage(){
         if let connection = stillImageOutput?.connectionWithMediaType(AVMediaTypeVideo) {
@@ -149,7 +152,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
                     (imageSampleBuffer : CMSampleBuffer!, _) in
                     
                     let imageDataJpeg = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageSampleBuffer)
-                    var pickedImage: UIImage = UIImage(data: imageDataJpeg)!
+                    let pickedImage: UIImage = UIImage(data: imageDataJpeg)!
                     UIImageWriteToSavedPhotosAlbum(pickedImage, nil, nil, nil)
             }
         }
@@ -158,6 +161,38 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
     }
 
+    func captureImageWithFilter(){
+        if let connection = stillImageOutput?.connectionWithMediaType(AVMediaTypeVideo) {
+            stillImageOutput?.captureStillImageAsynchronouslyFromConnection(connection)
+                {
+                    (imageSampleBuffer : CMSampleBuffer!, _) in
+                    
+                    let imageDataJpeg = AVCaptureStillImageOutput.jpegStillImageNSDataRepresentation(imageSampleBuffer)
+                    let pickedImage: UIImage = UIImage(data: imageDataJpeg)!
+                    let topImage = UIImage(named:"bee")
+                    let filter = CIFilter(name: "CIDarkenBlendMode")
+                    filter!.setValue(CIImage(image:pickedImage),forKey: kCIInputBackgroundImageKey)
+                    filter!.setValue(CIImage(image: topImage!), forKey: kCIInputImageKey)
+                    let ciContext = CIContext(options: nil)
+                    let cgImage = ciContext.createCGImage((filter?.outputImage)!, fromRect: (CIImage(image: pickedImage)?.extent)!)
+                    let uiImage = UIImage(CGImage: cgImage)
+                    UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
+            }
+        }
+        else {
+            print("error on connect")
+        }
+    }
+    
+    
+    // Filter 
+    func mergeImage(image:CIImage) -> CIImage? {
+        let topImage = UIImage(named:"bee")
+        let filter = CIFilter(name: "CIDarkenBlendMode")
+        filter!.setValue(image,forKey: kCIInputBackgroundImageKey)
+        filter!.setValue(CIImage(image: topImage!), forKey: kCIInputImageKey)
+        return filter!.outputImage
+    }
 
     //MARK: <AVCaptureVideoDataOutputSampleBufferDelegate
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
