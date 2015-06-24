@@ -24,7 +24,8 @@ func >|> (filter1: Filter, filter2: Filter) -> Filter {
 }
 
 class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
-    var applyFilter: ((CIImage) -> CIImage?)?       //滤镜方法
+    var applyFilter: ((CIImage) -> CIImage?)?       //应用的滤镜方法
+    var settingFilter :((CIImage) -> CIImage?)?     //设置的滤镜
     var device : AVCaptureDevice!   //摄像头位置 0: Front  1: Back
     var videoDisplayView: GLKView!
     var videoDisplayViewBounds: CGRect!
@@ -36,6 +37,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     var videoOutput:    AVCaptureVideoDataOutput!
     var stillImageOutput: AVCaptureStillImageOutput!
     var touchLocation: CGPoint?
+    var topImage:UIImage?
   
     init(superview: UIView, applyFilterCallback: ((CIImage) -> CIImage?)?) {
         self.applyFilter = applyFilterCallback
@@ -57,6 +59,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     }
   
     func startFiltering() {
+        applyFilter = settingFilter
         if avSession == nil {
             avSession = createAVSession()
         }
@@ -150,7 +153,18 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         }
     }
     
+    func updateApplyFilter(){
+        applyFilter = settingFilter! >|> fmergeAtPoint(topImage!, topLoc: touchLocation!)
+    }
+    
     // Filter
+    func fnone() -> Filter {
+        return {
+            image in
+            return image
+        }
+    }
+    
     func ftest() -> Filter {
         let topImage = UIImage(named: "bee")
         return self.fblur(5.0) >|> self.fmerge(CIImage(image: topImage!)!)
@@ -189,8 +203,17 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             return filter!.outputImage
         }
     }
-    
-    //TODO: 文字滤镜 - 添加文字overlay
+
+    //TODO: 文字滤镜 - 添加文字overlay (如何从 image 获得其属性？)
+//    func ftext(text: String) -> Filter {
+//        return {
+//            image in
+//            let font  = UIFont.boldSystemFontOfSize(32)
+//            let image = CGRectMake(0, 0, , <#T##height: CGFloat##CGFloat#>)
+//            
+//            UIGraphicsBeginImageContext(<#T##size: CGSize##CGSize#>)
+//        }
+//    }
     //TODO:
     
     //MARK: <AVCaptureVideoDataOutputSampleBufferDelegate
