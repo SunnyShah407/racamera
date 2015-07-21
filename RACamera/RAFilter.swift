@@ -130,10 +130,9 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
         return session
     }
     
-    
     //TODO: 照相功能
     func captureImage(){
-        if let connection = stillImageOutput?.connectionWithMediaType(AVMediaTypeVideo) {
+        if let connection = stillImageOutput.connectionWithMediaType(AVMediaTypeVideo) {
             stillImageOutput?.captureStillImageAsynchronouslyFromConnection(connection)
                 {
                     (imageSampleBuffer : CMSampleBuffer!, _) in
@@ -152,9 +151,11 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
             print("error on connect")
         }
     }
+
     
     func updateApplyFilter(){
         applyFilter = settingFilter! >|> fmergeAtPoint2(topImage!, topLoc: touchLocation!)
+        
     }
     
     // Filter
@@ -187,9 +188,16 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     func fmergeAtPoint2(inputImage: UIImage, topLoc: CGPoint) -> Filter {
         UIGraphicsBeginImageContextWithOptions(CGSize(width:240,height:180), false, 0)
-        inputImage.drawAtPoint(CGPoint(x:topLoc.y,y:topLoc.x))
+        //inputImage.drawAtPoint(CGPoint(x:100,y:50))
+        //
+        let rect = CGRectMake(0, 0, 240, 180)
+        inputImage.drawInRect(rect)
+        
+        
         let im = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
+        
+        
         let ciim = CIImage(image: im)
         return {
             image in
@@ -229,16 +237,7 @@ class RAVideoFilter: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate {
     }
 
     //TODO: 文字滤镜 - 添加文字overlay (如何从 image 获得其属性？)
-//    func ftext(text: String) -> Filter {
-//        return {
-//            image in
-//            let font  = UIFont.boldSystemFontOfSize(32)
-//            let image = CGRectMake(0, 0, , height: CGFloat)
-//            
-//            UIGraphicsBeginImageContext(<#T##size: CGSize##CGSize#>)
-//        }
-//    }
-    //TODO:
+
     
     //MARK: <AVCaptureVideoDataOutputSampleBufferDelegate
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {

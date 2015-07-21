@@ -25,6 +25,7 @@ class ViewController: UIViewController {
  //       videoFilter?.applyFilter = videoFilter?.fblur(1.0)
         videoFilter?.topImage = UIImage(named: "bee")?.imageRotatedByDegrees(-90, flip: false)
         videoFilter?.settingFilter = (videoFilter?.fdotscreen())! >|> (videoFilter?.fblur(5.0))!
+//        videoFilter?.settingFilter = videoFilter?.fblur(0.6)
         videoFilter?.startFiltering()
     }
     
