@@ -17,6 +17,7 @@
 		03B37D881B147E7D0068D15F /* RAFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03B37D871B147E7D0068D15F /* RAFilter.swift */; };
 		03B37D8A1B1C1D890068D15F /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 03B37D891B1C1D890068D15F /* logo.png */; };
 		03BDB4ED1B3A804900BD10F2 /* RAImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03BDB4EC1B3A804900BD10F2 /* RAImage.swift */; };
+		03C335D01B5C93C40054CA1D /* RACamera.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03C335CF1B5C93C40054CA1D /* RACamera.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,7 @@
 		03B37D871B147E7D0068D15F /* RAFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RAFilter.swift; sourceTree = "<group>"; };
 		03B37D891B1C1D890068D15F /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
 		03BDB4EC1B3A804900BD10F2 /* RAImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RAImage.swift; sourceTree = "<group>"; };
+		03C335CF1B5C93C40054CA1D /* RACamera.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RACamera.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +91,7 @@
 				03B37D691B1466510068D15F /* ViewController.swift */,
 				03B37D871B147E7D0068D15F /* RAFilter.swift */,
 				03BDB4EC1B3A804900BD10F2 /* RAImage.swift */,
+				03C335CF1B5C93C40054CA1D /* RACamera.swift */,
 				03B37D6B1B1466510068D15F /* Main.storyboard */,
 				03B37D891B1C1D890068D15F /* logo.png */,
 				030FEF381B1DCC4A004C2F53 /* bee.png */,
@@ -232,6 +235,7 @@
 				03B37D881B147E7D0068D15F /* RAFilter.swift in Sources */,
 				03BDB4ED1B3A804900BD10F2 /* RAImage.swift in Sources */,
 				03B37D681B1466510068D15F /* AppDelegate.swift in Sources */,
+				03C335D01B5C93C40054CA1D /* RACamera.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -363,6 +367,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = RACamera/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "net.redapricot.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -375,6 +380,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				INFOPLIST_FILE = RACamera/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "net.redapricot.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";

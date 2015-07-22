@@ -24,7 +24,8 @@ class ViewController: UIViewController {
  //       videoFilter?.applyFilter = {image in  return self.videoFilter?.mergeImage(image)}
  //       videoFilter?.applyFilter = videoFilter?.fblur(1.0)
         videoFilter?.topImage = UIImage(named: "bee")?.imageRotatedByDegrees(-90, flip: false)
-        videoFilter?.settingFilter = videoFilter?.fblur(5.0)
+//        videoFilter?.settingFilter = (videoFilter?.fdotscreen())! >|> (videoFilter?.fblur(5.0))!
+        videoFilter?.settingFilter = videoFilter?.fblur(0.6)
         videoFilter?.startFiltering()
     }
     
@@ -54,10 +55,9 @@ class ViewController: UIViewController {
     override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         if let touch = touches.first {
             let location = touch.locationInView(self.view)
-            videoFilter?.touchLocation = location
-//            videoFilter?.applyFilter = videoFilter?.fmergeAtPoint(UIImage(named: "bee")!, topLoc: location)
-            videoFilter?.updateApplyFilter()
             print(location)
+            videoFilter?.touchLocation = location
+            videoFilter?.updateApplyFilter()
         }
         super.touchesBegan(touches, withEvent:event)
     }
